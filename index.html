@@ -258,7 +258,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const ADMIN_PW = 'tlsalswo5%';
-let GAS_URL = localStorage.getItem('bm_gas_url') || '';
+let GAS_URL = 'https://script.google.com/macros/s/AKfycbx0u2FmmvMORyK6lTeMpF3dJwxPyGvkp6zRaKpDHZvrxz_OZ-BtleREu5jCVEiyC8g2Vg/exec';
 let currentUser = null;
 let selMethod = '', selWater = '';
 let cachedLogs = [];
@@ -498,7 +498,7 @@ function exportExcel(){
 }
 
 // ── Init ─────────────────────────────────────────
-if(GAS_URL){initLogin();}else{show('s-setup');}
+initLogin();
 </script>
 </body>
 </html>
