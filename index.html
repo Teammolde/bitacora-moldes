@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Bitácora Moldes"/>
+<meta name="theme-color" content="#1a237e"/>
+<title>Bitácora de Moldes</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:430px;background:#f0f2f5;min-height:100vh}
+.screen{display:none;flex-direction:column;min-height:100vh}
+.screen.active{display:flex}
+.header{background:#1a237e;color:white;padding:52px 16px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.header h1{font-size:17px;font-weight:600;color:white}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.65);margin-bottom:1px}
+.header-right{margin-left:auto;font-size:13px;color:rgba(255,255,255,0.8);cursor:pointer;padding:6px}
+.tab-bar{display:flex;background:white;border-bottom:1px solid #e8e8e8;position:sticky;top:88px;z-index:9}
+.tab{flex:1;padding:10px 4px 8px;font-size:11px;text-align:center;color:#888;cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:#1a237e;border-bottom-color:#1a237e;font-weight:600}
+.body{padding:14px;flex:1}
+.sec-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.6px;margin:16px 0 6px;font-weight:600;padding-left:4px}
+.card{background:white;border-radius:14px;border:1px solid #e8e8e8;overflow:hidden;margin-bottom:6px}
+.field-row{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #f0f0f0}
+.field-row:last-child{border-bottom:none}
+.fi{color:#aaa;font-size:19px;margin-top:2px;flex-shrink:0}
+.fin{flex:1}
+.fin label{font-size:11px;color:#999;display:block;margin-bottom:2px;font-weight:500}
+.fin input,.fin select,.fin textarea{width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;resize:none;-webkit-appearance:none}
+.fin textarea{min-height:54px;line-height:1.5}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:12px 14px;background:white;border-radius:14px;border:1px solid #e8e8e8;margin-bottom:6px}
+.opt-btn{padding:9px 6px;border-radius:10px;border:1px solid #e0e0e0;background:#f8f8f8;font-size:12px;color:#666;text-align:center;cursor:pointer;transition:all .15s;font-family:inherit}
+.opt-btn.sel{background:#e8eaf6;border-color:#3949ab;color:#1a237e;font-weight:600}
+.water-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:12px 14px;background:white;border-radius:14px;border:1px solid #e8e8e8;margin-bottom:6px}
+.w-btn{padding:9px 4px;border-radius:10px;border:1px solid #e0e0e0;background:#f8f8f8;font-size:11px;color:#666;text-align:center;cursor:pointer;transition:all .15s;font-family:inherit}
+.w-btn.sel{background:#e3f2fd;border-color:#1e88e5;color:#0d47a1;font-weight:600}
+.time-row{display:flex;gap:8px;margin-bottom:6px}
+.time-row .card{flex:1;margin-bottom:0}
+.submit-btn{width:100%;padding:15px;background:#1a237e;color:white;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;margin-top:18px;font-family:inherit;transition:opacity .15s}
+.submit-btn:active{opacity:.85}
+.submit-btn:disabled{opacity:.5}
+.log-card{background:white;border-radius:14px;border:1px solid #e8e8e8;padding:13px 14px;margin-bottom:8px}
+.badge{display:inline-block;font-size:10px;padding:3px 9px;border-radius:20px;background:#e8eaf6;color:#1a237e;font-weight:600;margin-right:4px;margin-bottom:3px}
+.badge.blue{background:#e3f2fd;color:#0d47a1}
+.badge.green{background:#e8f5e9;color:#1b5e20}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{background:white;border-radius:14px;border:1px solid #e8e8e8;padding:14px}
+.stat-val{font-size:26px;font-weight:700;color:#1a237e}
+.stat-lbl{font-size:11px;color:#888;margin-bottom:4px;font-weight:500}
+.login-body{padding:32px 20px;flex:1;display:flex;flex-direction:column;align-items:center;gap:12px}
+.login-body h2{font-size:20px;font-weight:700;color:#111;margin-bottom:4px}
+.login-body p{font-size:13px;color:#888;text-align:center;margin-bottom:4px}
+.login-input{width:100%;padding:13px 16px;border-radius:12px;border:1px solid #ddd;background:white;font-size:15px;color:#111;font-family:inherit;outline:none}
+.login-input:focus{border-color:#3949ab;box-shadow:0 0 0 3px rgba(57,73,171,.1)}
+.login-btn{width:100%;padding:14px;background:#1a237e;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit}
+.login-btn:disabled{opacity:.5}
+.err{color:#c62828;font-size:12px;text-align:center;min-height:16px}
+.link-btn{font-size:13px;color:#3949ab;cursor:pointer;padding:4px;background:none;border:none;font-family:inherit}
+.emp-row{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid #f0f0f0}
+.emp-row:last-child{border-bottom:none}
+.del-btn{font-size:13px;color:#e53935;cursor:pointer;background:none;border:none;padding:4px 8px;font-family:inherit}
+.add-emp{display:flex;gap:7px;margin-bottom:8px}
+.add-emp input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #ddd;background:white;font-size:13px;color:#111;font-family:inherit;outline:none}
+.add-emp input:focus{border-color:#3949ab}
+.add-emp button{padding:10px 14px;background:#1a237e;color:white;border:none;border-radius:10px;font-size:15px;cursor:pointer;font-family:inherit}
+.filter-row{display:flex;gap:7px;margin-bottom:10px}
+.filter-row select{flex:1;padding:9px 10px;border-radius:10px;border:1px solid #ddd;background:white;font-size:12px;color:#333;font-family:inherit;outline:none}
+.export-btn{width:100%;padding:12px;background:white;color:#1a237e;border:1px solid #3949ab;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px}
+.empty{text-align:center;padding:48px 20px;color:#bbb}
+.empty i{font-size:40px;display:block;margin-bottom:12px}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a237e;color:white;padding:11px 22px;border-radius:24px;font-size:14px;font-weight:500;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px;color:#888;font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid #ddd;border-top-color:#1a237e;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Setup screen */
+.setup-box{background:white;border-radius:14px;border:1px solid #e8e8e8;padding:16px;margin-bottom:10px}
+.setup-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.step-num{width:26px;height:26px;background:#1a237e;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.step-text{font-size:13px;color:#444;line-height:1.6}
+.step-text strong{color:#111}
+.url-input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid #ddd;background:#f8f8f8;font-size:12px;color:#333;font-family:monospace;outline:none;margin-top:8px}
+.url-input:focus{border-color:#3949ab;background:white}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="toast" id="toast"></div>
+
+<!-- ① SETUP SCREEN -->
+<div id="s-setup" class="screen active">
+  <div class="header">
+    <i class="ti ti-settings" style="font-size:22px"></i>
+    <div><div class="header-sub">초기 설정</div><h1>서버 연결</h1></div>
+  </div>
+  <div class="body">
+    <div class="setup-box">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>구글 시트</strong>를 새로 만드세요.<br>이름은 아무거나 OK (예: 작업일지)</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-text">시트 상단 메뉴 → <strong>확장 프로그램</strong> → <strong>Apps Script</strong></div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-text">다운로드한 <strong>google_apps_script.js</strong> 파일 내용을 전부 붙여넣기 → 💾 저장</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">4</div>
+        <div class="step-text"><strong>배포</strong> 버튼 → <strong>새 배포</strong> → 유형: <strong>웹 앱</strong><br>실행 권한: <strong>나</strong> / 액세스 권한: <strong>모든 사람</strong> → 배포</div>
+      </div>
+      <div class="setup-step" style="margin-bottom:0">
+        <div class="step-num">5</div>
+        <div class="step-text"><strong>웹 앱 URL</strong>을 복사해서 아래에 붙여넣기</div>
+      </div>
+    </div>
+    <input type="url" class="url-input" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" />
+    <button class="submit-btn" style="margin-top:10px" onclick="saveUrl()">
+      <i class="ti ti-plug" style="font-size:17px;vertical-align:-2px"></i>  연결하기
+    </button>
+    <p style="font-size:11px;color:#bbb;text-align:center;margin-top:12px">설정은 이 기기에 저장됩니다</p>
+  </div>
+</div>
+
+<!-- ② LOGIN -->
+<div id="s-login" class="screen">
+  <div class="header">
+    <i class="ti ti-tool" style="font-size:22px"></i>
+    <div><div class="header-sub">Mantenimiento de moldes</div><h1>Bitácora</h1></div>
+  </div>
+  <div class="login-body">
+    <i class="ti ti-user-circle" style="font-size:64px;color:#1a237e;margin-bottom:4px"></i>
+    <h2>Iniciar sesión</h2>
+    <p>Selecciona tu nombre e ingresa tu contraseña</p>
+    <select class="login-input" id="login-name"><option value="">— Cargando... —</option></select>
+    <input type="password" class="login-input" id="login-pw" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()" />
+    <div id="login-err" class="err"></div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+    <button class="link-btn" onclick="showAdminLogin()">
+      <i class="ti ti-shield" style="font-size:13px;vertical-align:-1px"></i> Acceso administrador
+    </button>
+    <button class="link-btn" style="color:#bbb;font-size:11px" onclick="show('s-setup')">⚙ Cambiar URL de servidor</button>
+  </div>
+</div>
+
+<!-- ③ ADMIN LOGIN -->
+<div id="s-admin-login" class="screen">
+  <div class="header">
+    <i class="ti ti-shield" style="font-size:22px"></i>
+    <div><div class="header-sub">Acceso restringido</div><h1>Administrador</h1></div>
+  </div>
+  <div class="login-body">
+    <i class="ti ti-lock" style="font-size:56px;color:#1a237e;margin-bottom:4px"></i>
+    <h2>Contraseña de admin</h2>
+    <input type="password" class="login-input" id="admin-pw" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doAdminLogin()" />
+    <div id="admin-err" class="err"></div>
+    <button class="login-btn" onclick="doAdminLogin()">Entrar como administrador</button>
+    <button class="link-btn" onclick="show('s-login')">← Volver</button>
+  </div>
+</div>
+
+<!-- ④ WORKER -->
+<div id="s-worker" class="screen">
+  <div class="header">
+    <i class="ti ti-tool" style="font-size:20px"></i>
+    <div><div class="header-sub" id="worker-greeting">Hola</div><h1>Nuevo registro</h1></div>
+    <div class="header-right" onclick="logout()"><i class="ti ti-logout" style="font-size:18px"></i></div>
+  </div>
+  <div class="body">
+    <div class="sec-label">Identificación</div>
+    <div class="card">
+      <div class="field-row"><i class="ti ti-cube fi"></i><div class="fin"><label>MOLDE</label><input type="text" id="w-molde" placeholder="Ej. M-042" /></div></div>
+      <div class="field-row"><i class="ti ti-map-pin fi"></i><div class="fin"><label>UBICACIÓN</label><input type="text" id="w-ubicacion" placeholder="Ej. Línea 3 — Prensa A" /></div></div>
+    </div>
+    <div class="sec-label">Método de mantenimiento</div>
+    <div class="btn-grid" id="method-grid">
+      <button class="opt-btn" onclick="selOpt(this,'method')">Preventivo</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Correctivo</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Predictivo</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Limpieza</button>
+    </div>
+    <div class="sec-label">Problema</div>
+    <div class="card">
+      <div class="field-row"><i class="ti ti-alert-triangle fi"></i><div class="fin"><label>DESCRIPCIÓN</label><textarea id="w-problema" placeholder="Descripción breve..."></textarea></div></div>
+      <div class="field-row"><i class="ti ti-adjustments fi"></i><div class="fin"><label>PARTE DE MOLDE</label><input type="text" id="w-parte" placeholder="Cavidad, Expulsores, Guías..." /></div></div>
+    </div>
+    <div class="sec-label">Tiempo de trabajo</div>
+    <div class="time-row">
+      <div class="card"><div class="field-row"><i class="ti ti-clock fi"></i><div class="fin"><label>INICIO</label><input type="time" id="w-inicio" /></div></div></div>
+      <div class="card"><div class="field-row"><i class="ti ti-clock-check fi"></i><div class="fin"><label>FIN</label><input type="time" id="w-fin" /></div></div></div>
+    </div>
+    <div class="sec-label">Circulación de agua</div>
+    <div class="water-grid" id="water-grid">
+      <button class="w-btn" onclick="selOpt(this,'water')"><i class="ti ti-check" style="font-size:15px;display:block;margin:0 auto 3px"></i>Normal</button>
+      <button class="w-btn" onclick="selOpt(this,'water')"><i class="ti ti-alert-circle" style="font-size:15px;display:block;margin:0 auto 3px"></i>Obstruida</button>
+      <button class="w-btn" onclick="selOpt(this,'water')"><i class="ti ti-x" style="font-size:15px;display:block;margin:0 auto 3px"></i>Sin agua</button>
+    </div>
+    <button class="submit-btn" id="save-btn" onclick="saveLog()">
+      <i class="ti ti-device-floppy" style="font-size:17px;vertical-align:-2px"></i>  Guardar registro
+    </button>
+    <div style="height:32px"></div>
+  </div>
+</div>
+
+<!-- ⑤ ADMIN -->
+<div id="s-admin" class="screen">
+  <div class="header">
+    <i class="ti ti-shield" style="font-size:20px"></i>
+    <div><div class="header-sub">Panel de administrador</div><h1>Dashboard</h1></div>
+    <div class="header-right" onclick="logout()"><i class="ti ti-logout" style="font-size:18px"></i></div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active" onclick="adminTab('records')"><i class="ti ti-list" style="font-size:14px;display:block;margin-bottom:1px"></i>Registros</div>
+    <div class="tab" onclick="adminTab('stats')"><i class="ti ti-chart-bar" style="font-size:14px;display:block;margin-bottom:1px"></i>Estadísticas</div>
+    <div class="tab" onclick="adminTab('employees')"><i class="ti ti-users" style="font-size:14px;display:block;margin-bottom:1px"></i>Empleados</div>
+  </div>
+  <div class="body">
+    <div id="admin-records" class="a-tab">
+      <div class="filter-row">
+        <select id="f-emp" onchange="renderAdminLogs()"><option value="">Todos los empleados</option></select>
+        <select id="f-method" onchange="renderAdminLogs()">
+          <option value="">Todos los métodos</option>
+          <option>Preventivo</option><option>Correctivo</option><option>Predictivo</option><option>Limpieza</option>
+        </select>
+      </div>
+      <button class="export-btn" onclick="exportExcel()"><i class="ti ti-download" style="font-size:16px"></i> Exportar Excel (.xlsx)</button>
+      <div id="admin-log-list"></div>
+    </div>
+    <div id="admin-stats" class="a-tab" style="display:none">
+      <div class="stat-grid" id="stat-grid"></div>
+      <div class="sec-label" style="margin-top:4px">Por empleado</div>
+      <div id="stat-emp-list"></div>
+      <div class="sec-label">Por método</div>
+      <div id="stat-method-list"></div>
+    </div>
+    <div id="admin-employees" class="a-tab" style="display:none">
+      <div class="sec-label" style="margin-top:4px">Agregar empleado</div>
+      <div class="add-emp">
+        <input type="text" id="new-emp-name" placeholder="Nombre" />
+        <input type="password" id="new-emp-pw" placeholder="Contraseña" style="width:110px" />
+        <button onclick="addEmployee()"><i class="ti ti-plus"></i></button>
+      </div>
+      <div class="sec-label">Lista</div>
+      <div class="card" id="emp-list"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+const ADMIN_PW = 'tlsalswo5%';
+let GAS_URL = localStorage.getItem('bm_gas_url') || '';
+let currentUser = null;
+let selMethod = '', selWater = '';
+let cachedLogs = [];
+
+// ── Utilities ───────────────────────────────────
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function loading(containerId){document.getElementById(containerId).innerHTML='<div class="loading"><div class="spinner"></div>Cargando...</div>';}
+
+async function api(params){
+  const url=new URL(GAS_URL);
+  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+  const res=await fetch(url.toString());
+  return res.json();
+}
+
+// ── Setup ────────────────────────────────────────
+function saveUrl(){
+  const url=document.getElementById('gas-url').value.trim();
+  if(!url.startsWith('https://script.google.com')){toast('⚠️ URL이 올바르지 않아요');return;}
+  GAS_URL=url;
+  localStorage.setItem('bm_gas_url',url);
+  toast('연결 완료!');
+  initLogin();
+}
+
+// ── Login ────────────────────────────────────────
+async function initLogin(){
+  show('s-login');
+  const sel=document.getElementById('login-name');
+  sel.innerHTML='<option value="">— 로딩 중... —</option>';
+  try{
+    const data=await api({action:'getemployees'});
+    sel.innerHTML='<option value="">— Selecciona tu nombre —</option>';
+    (data.employees||[]).forEach(e=>{const o=document.createElement('option');o.value=e.name;o.textContent=e.name;sel.appendChild(o);});
+  }catch(e){sel.innerHTML='<option value="">— Error de conexión —</option>';}
+}
+
+function showAdminLogin(){document.getElementById('admin-pw').value='';document.getElementById('admin-err').textContent='';show('s-admin-login');}
+
+async function doLogin(){
+  const name=document.getElementById('login-name').value;
+  const pw=document.getElementById('login-pw').value;
+  if(!name){document.getElementById('login-err').textContent='Selecciona tu nombre';return;}
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true;btn.textContent='Verificando...';
+  try{
+    const data=await api({action:'getemployees'});
+    const emp=(data.employees||[]).find(e=>e.name===name&&String(e.pw)===pw);
+    if(!emp){document.getElementById('login-err').textContent='Contraseña incorrecta';btn.disabled=false;btn.textContent='Entrar';return;}
+    currentUser=name;
+    document.getElementById('worker-greeting').textContent='Hola, '+name;
+    const now=new Date();
+    document.getElementById('w-inicio').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('w-fin').value='';
+    ['w-molde','w-ubicacion','w-problema','w-parte'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('.opt-btn,.w-btn').forEach(b=>b.classList.remove('sel'));
+    selMethod='';selWater='';
+    document.getElementById('login-err').textContent='';
+    document.getElementById('login-pw').value='';
+    show('s-worker');
+  }catch(e){document.getElementById('login-err').textContent='Error de conexión';}
+  btn.disabled=false;btn.textContent='Entrar';
+}
+
+function doAdminLogin(){
+  const pw=document.getElementById('admin-pw').value;
+  if(pw!==ADMIN_PW){document.getElementById('admin-err').textContent='Contraseña incorrecta';return;}
+  document.getElementById('admin-err').textContent='';document.getElementById('admin-pw').value='';
+  currentUser='admin';
+  adminTab('records');
+  show('s-admin');
+}
+
+function logout(){currentUser=null;initLogin();}
+
+// ── Worker ───────────────────────────────────────
+function selOpt(el,group){
+  const grid=document.getElementById(group==='method'?'method-grid':'water-grid');
+  grid.querySelectorAll(group==='method'?'.opt-btn':'.w-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  if(group==='method')selMethod=el.textContent.trim();
+  else selWater=el.textContent.trim();
+}
+
+async function saveLog(){
+  const molde=document.getElementById('w-molde').value.trim();
+  if(!molde){toast('⚠️ Ingresa el número de molde');return;}
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner" style="display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:6px"></div> Guardando...';
+  try{
+    await api({
+      action:'savelog',
+      empleado:currentUser,
+      molde,
+      ubicacion:document.getElementById('w-ubicacion').value.trim(),
+      method:selMethod,
+      problema:document.getElementById('w-problema').value.trim(),
+      parte:document.getElementById('w-parte').value.trim(),
+      inicio:document.getElementById('w-inicio').value,
+      fin:document.getElementById('w-fin').value,
+      water:selWater
+    });
+    ['w-molde','w-ubicacion','w-problema','w-parte','w-fin'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('.opt-btn,.w-btn').forEach(b=>b.classList.remove('sel'));
+    selMethod='';selWater='';
+    toast('✓ Guardado en Google Sheets');
+  }catch(e){toast('⚠️ Error al guardar. Revisa la conexión.');}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy" style="font-size:17px;vertical-align:-2px"></i>  Guardar registro';
+}
+
+// ── Admin ─────────────────────────────────────────
+function adminTab(tab){
+  document.querySelectorAll('#s-admin .tab').forEach((t,i)=>t.classList.toggle('active',['records','stats','employees'][i]===tab));
+  document.querySelectorAll('.a-tab').forEach(d=>d.style.display='none');
+  document.getElementById('admin-'+tab).style.display='block';
+  if(tab==='records')renderAdminLogs();
+  if(tab==='stats')renderStats();
+  if(tab==='employees')renderEmpList();
+}
+
+async function renderAdminLogs(){
+  loading('admin-log-list');
+  const empF=document.getElementById('f-emp').value;
+  const mF=document.getElementById('f-method').value;
+  try{
+    const params={action:'getlogs'};
+    if(empF)params.empleado=empF;
+    if(mF)params.method=mF;
+    const data=await api(params);
+    cachedLogs=data.logs||[];
+    refreshEmpFilter(cachedLogs);
+    const c=document.getElementById('admin-log-list');
+    c.innerHTML=cachedLogs.length===0
+      ?'<div class="empty"><i class="ti ti-clipboard-list"></i><p>No hay registros aún.</p></div>'
+      :cachedLogs.map(logCard).join('');
+  }catch(e){document.getElementById('admin-log-list').innerHTML='<div class="empty"><i class="ti ti-wifi-off"></i><p>Error de conexión</p></div>';}
+}
+
+function refreshEmpFilter(logs){
+  const sel=document.getElementById('f-emp');
+  const cur=sel.value;
+  const names=[...new Set(logs.map(l=>l['Empleado']).filter(Boolean))];
+  sel.innerHTML='<option value="">Todos los empleados</option>';
+  names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
+  sel.value=cur;
+}
+
+function logCard(l){
+  return`<div class="log-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#111"><i class="ti ti-cube" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>${l['Molde']||''}</div>
+        ${l['Ubicación']?`<div style="font-size:11px;color:#999;margin-top:2px"><i class="ti ti-map-pin" style="font-size:11px"></i> ${l['Ubicación']}</div>`:''}
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;background:#e8eaf6;color:#1a237e;padding:2px 9px;border-radius:20px;font-weight:600">${l['Fecha']||''}</div>
+        <div style="font-size:11px;color:#aaa;margin-top:3px">${l['Hora']||''}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:6px">
+      <span class="badge"><i class="ti ti-user" style="font-size:10px"></i> ${l['Empleado']||''}</span>
+      ${l['Método']?`<span class="badge">${l['Método']}</span>`:''}
+      ${l['Circulación de agua']?`<span class="badge blue"><i class="ti ti-droplet" style="font-size:10px"></i> ${l['Circulación de agua']}</span>`:''}
+      ${(l['Hora inicio']&&l['Hora fin'])?`<span class="badge green"><i class="ti ti-clock" style="font-size:10px"></i> ${l['Hora inicio']}–${l['Hora fin']}</span>`:''}
+    </div>
+    ${l['Problema']?`<div style="font-size:12px;color:#666;line-height:1.45;margin-top:4px"><span style="font-size:10px;font-weight:700;color:#aaa">PROBLEMA: </span>${l['Problema']}</div>`:''}
+    ${l['Parte de molde']?`<div style="font-size:12px;color:#666;margin-top:3px"><span style="font-size:10px;font-weight:700;color:#aaa">PARTE: </span>${l['Parte de molde']}</div>`:''}
+  </div>`;
+}
+
+async function renderStats(){
+  loading('stat-grid');
+  try{
+    const data=await api({action:'getlogs'});
+    const logs=data.logs||[];
+    const today=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});
+    const todayCount=logs.filter(l=>l['Fecha']===today).length;
+    const empSet=new Set(logs.map(l=>l['Empleado']).filter(Boolean)).size;
+    const mCount={};logs.forEach(l=>{if(l['Método'])mCount[l['Método']]=(mCount[l['Método']]||0)+1;});
+    const top=Object.entries(mCount).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('stat-grid').innerHTML=`
+      <div class="stat-card"><div class="stat-lbl">Total registros</div><div class="stat-val">${logs.length}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Hoy</div><div class="stat-val">${todayCount}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Empleados</div><div class="stat-val">${empSet}</div></div>
+      <div class="stat-card"><div class="stat-lbl">Método top</div><div class="stat-val" style="font-size:16px">${top?top[0]:'—'}</div></div>`;
+    const empStats={};logs.forEach(l=>{if(l['Empleado'])empStats[l['Empleado']]=(empStats[l['Empleado']]||0)+1;});
+    document.getElementById('stat-emp-list').innerHTML=Object.entries(empStats).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:white;border-radius:10px;margin-bottom:5px;border:1px solid #eee">
+        <span style="font-size:13px;font-weight:500"><i class="ti ti-user" style="font-size:13px;vertical-align:-1px;margin-right:6px;color:#aaa"></i>${n}</span>
+        <span class="badge">${c} registros</span>
+      </div>`).join('')||'<div style="color:#bbb;font-size:13px;padding:8px">Sin datos</div>';
+    document.getElementById('stat-method-list').innerHTML=Object.entries(mCount).sort((a,b)=>b[1]-a[1]).map(([m,c])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:white;border-radius:10px;margin-bottom:5px;border:1px solid #eee">
+        <span style="font-size:13px;font-weight:500">${m}</span><span class="badge">${c}</span>
+      </div>`).join('')||'<div style="color:#bbb;font-size:13px;padding:8px">Sin datos</div>';
+  }catch(e){document.getElementById('stat-grid').innerHTML='<p style="color:#bbb;font-size:13px">Error de conexión</p>';}
+}
+
+async function renderEmpList(){
+  loading('emp-list');
+  try{
+    const data=await api({action:'getemployees'});
+    document.getElementById('emp-list').innerHTML=(data.employees||[]).map((e,i)=>`
+      <div class="emp-row">
+        <div><div style="font-size:14px;font-weight:600;color:#111">${e.name}</div><div style="font-size:11px;color:#bbb">PW: ${'•'.repeat(String(e.pw).length)}</div></div>
+        <button class="del-btn" onclick="delEmp('${e.name}')"><i class="ti ti-trash" style="font-size:15px"></i></button>
+      </div>`).join('');
+  }catch(e){document.getElementById('emp-list').innerHTML='<div style="padding:14px;color:#bbb;font-size:13px">Error</div>';}
+}
+
+async function addEmployee(){
+  const name=document.getElementById('new-emp-name').value.trim();
+  const pw=document.getElementById('new-emp-pw').value.trim();
+  if(!name||!pw){toast('⚠️ Nombre y contraseña requeridos');return;}
+  try{
+    const r=await api({action:'addemployee',name,pw});
+    if(r.error){toast('⚠️ '+r.error);return;}
+    document.getElementById('new-emp-name').value='';
+    document.getElementById('new-emp-pw').value='';
+    renderEmpList();toast('✓ Empleado agregado');
+  }catch(e){toast('⚠️ Error de conexión');}
+}
+
+async function delEmp(name){
+  if(!confirm('¿Eliminar a '+name+'?'))return;
+  try{await api({action:'delemployee',name});renderEmpList();toast('Empleado eliminado');}
+  catch(e){toast('⚠️ Error');}
+}
+
+function exportExcel(){
+  if(!cachedLogs.length){toast('No hay datos para exportar');return;}
+  const ws=XLSX.utils.json_to_sheet(cachedLogs);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'Registros',ws);
+  XLSX.writeFile(wb,'bitacora_moldes.xlsx');
+}
+
+// ── Init ─────────────────────────────────────────
+if(GAS_URL){initLogin();}else{show('s-setup');}
+</script>
+</body>
+</html>
