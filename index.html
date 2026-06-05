@@ -96,36 +96,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="s-setup" class="screen active">
   <div class="header">
     <i class="ti ti-settings" style="font-size:22px"></i>
-    <div><div class="header-sub">초기 설정</div><h1>서버 연결</h1></div>
+    <div><div class="header-sub">Configuración inicial</div><h1>Conexión al servidor</h1></div>
   </div>
   <div class="body">
     <div class="setup-box">
       <div class="setup-step">
         <div class="step-num">1</div>
-        <div class="step-text"><strong>구글 시트</strong>를 새로 만드세요.<br>이름은 아무거나 OK (예: 작업일지)</div>
+        <div class="step-text">Crea una nueva <strong>Google Sheets</strong>.<br>El nombre puede ser cualquiera (ej. Bitácora)</div>
       </div>
       <div class="setup-step">
         <div class="step-num">2</div>
-        <div class="step-text">시트 상단 메뉴 → <strong>확장 프로그램</strong> → <strong>Apps Script</strong></div>
+        <div class="step-text">Menú superior → <strong>Extensiones</strong> → <strong>Apps Script</strong></div>
       </div>
       <div class="setup-step">
         <div class="step-num">3</div>
-        <div class="step-text">다운로드한 <strong>google_apps_script.js</strong> 파일 내용을 전부 붙여넣기 → 💾 저장</div>
+        <div class="step-text">Pega todo el contenido del archivo <strong>google_apps_script.js</strong> descargado → 💾 Guardar</div>
       </div>
       <div class="setup-step">
         <div class="step-num">4</div>
-        <div class="step-text"><strong>배포</strong> 버튼 → <strong>새 배포</strong> → 유형: <strong>웹 앱</strong><br>실행 권한: <strong>나</strong> / 액세스 권한: <strong>모든 사람</strong> → 배포</div>
+        <div class="step-text">Botón <strong>Implementar</strong> → <strong>Nueva implementación</strong> → Tipo: <strong>App web</strong><br>Ejecutar como: <strong>Yo</strong> / Acceso: <strong>Cualquier persona</strong> → Implementar</div>
       </div>
       <div class="setup-step" style="margin-bottom:0">
         <div class="step-num">5</div>
-        <div class="step-text"><strong>웹 앱 URL</strong>을 복사해서 아래에 붙여넣기</div>
+        <div class="step-text">Copia la <strong>URL de la app web</strong> y pégala abajo</div>
       </div>
     </div>
     <input type="url" class="url-input" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" />
     <button class="submit-btn" style="margin-top:10px" onclick="saveUrl()">
-      <i class="ti ti-plug" style="font-size:17px;vertical-align:-2px"></i>  연결하기
+      <i class="ti ti-plug" style="font-size:17px;vertical-align:-2px"></i>  Conectar
     </button>
-    <p style="font-size:11px;color:#bbb;text-align:center;margin-top:12px">설정은 이 기기에 저장됩니다</p>
+    <p style="font-size:11px;color:#bbb;text-align:center;margin-top:12px">La configuración se guarda en este dispositivo</p>
   </div>
 </div>
 
@@ -176,15 +176,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="body">
     <div class="sec-label">Identificación</div>
     <div class="card">
-      <div class="field-row"><i class="ti ti-cube fi"></i><div class="fin"><label>MOLDE</label><input type="text" id="w-molde" placeholder="Ej. M-042" /></div></div>
-      <div class="field-row"><i class="ti ti-map-pin fi"></i><div class="fin"><label>UBICACIÓN</label><input type="text" id="w-ubicacion" placeholder="Ej. Línea 3 — Prensa A" /></div></div>
+      <div class="field-row"><i class="ti ti-cube fi"></i><div class="fin"><label>MOLDE NUMERO</label><input type="text" id="w-molde" placeholder="" /></div></div>
+      <div class="field-row"><i class="ti ti-map-pin fi"></i><div class="fin"><label>MAQUINA</label><input type="text" id="w-ubicacion" placeholder="Tailler" /></div></div>
     </div>
     <div class="sec-label">Método de mantenimiento</div>
-    <div class="btn-grid" id="method-grid">
-      <button class="opt-btn" onclick="selOpt(this,'method')">Preventivo</button>
-      <button class="opt-btn" onclick="selOpt(this,'method')">Correctivo</button>
-      <button class="opt-btn" onclick="selOpt(this,'method')">Predictivo</button>
+    <div class="btn-grid" id="method-grid" style="grid-template-columns:1fr 1fr 1fr;">
       <button class="opt-btn" onclick="selOpt(this,'method')">Limpieza</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Preventivo</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Reparacion</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Modificacion</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Orden de Modificacion</button>
     </div>
     <div class="sec-label">Problema</div>
     <div class="card">
@@ -192,6 +193,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="field-row"><i class="ti ti-adjustments fi"></i><div class="fin"><label>PARTE DE MOLDE</label><input type="text" id="w-parte" placeholder="Cavidad, Expulsores, Guías..." /></div></div>
     </div>
     <div class="sec-label">Tiempo de trabajo</div>
+    <div class="card" style="margin-bottom:6px">
+      <div class="field-row"><i class="ti ti-calendar fi"></i><div class="fin"><label>FECHA</label><input type="date" id="w-fecha" /></div></div>
+    </div>
     <div class="time-row">
       <div class="card"><div class="field-row"><i class="ti ti-clock fi"></i><div class="fin"><label>INICIO</label><input type="time" id="w-inicio" /></div></div></div>
       <div class="card"><div class="field-row"><i class="ti ti-clock-check fi"></i><div class="fin"><label>FIN</label><input type="time" id="w-fin" /></div></div></div>
@@ -227,7 +231,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <select id="f-emp" onchange="renderAdminLogs()"><option value="">Todos los empleados</option></select>
         <select id="f-method" onchange="renderAdminLogs()">
           <option value="">Todos los métodos</option>
-          <option>Preventivo</option><option>Correctivo</option><option>Predictivo</option><option>Limpieza</option>
+          <option>Limpieza</option><option>Preventivo</option><option>Reparacion</option><option>Modificacion</option><option>Orden de Modificacion</option>
         </select>
       </div>
       <button class="export-btn" onclick="exportExcel()"><i class="ti ti-download" style="font-size:16px"></i> Exportar Excel (.xlsx)</button>
@@ -258,7 +262,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const ADMIN_PW = 'tlsalswo5%';
-let GAS_URL = 'https://script.google.com/macros/s/AKfycbx0u2FmmvMORyK6lTeMpF3dJwxPyGvkp6zRaKpDHZvrxz_OZ-BtleREu5jCVEiyC8g2Vg/exec';
+let GAS_URL = 'https://script.google.com/macros/s/AKfycbwPxK1z1Bg8YXjrCyxvyfAObOlKII3OPxoB6oqANoLVgxECNn0lJxoF7qEURLbrWYfO/exec';
 let currentUser = null;
 let selMethod = '', selWater = '';
 let cachedLogs = [];
@@ -278,10 +282,10 @@ async function api(params){
 // ── Setup ────────────────────────────────────────
 function saveUrl(){
   const url=document.getElementById('gas-url').value.trim();
-  if(!url.startsWith('https://script.google.com')){toast('⚠️ URL이 올바르지 않아요');return;}
+  if(!url.startsWith('https://script.google.com')){toast('⚠️ La URL no es válida');return;}
   GAS_URL=url;
   localStorage.setItem('bm_gas_url',url);
-  toast('연결 완료!');
+  toast('¡Conexión exitosa!');
   initLogin();
 }
 
@@ -289,7 +293,7 @@ function saveUrl(){
 async function initLogin(){
   show('s-login');
   const sel=document.getElementById('login-name');
-  sel.innerHTML='<option value="">— 로딩 중... —</option>';
+  sel.innerHTML='<option value="">— Cargando... —</option>';
   try{
     const data=await api({action:'getemployees'});
     sel.innerHTML='<option value="">— Selecciona tu nombre —</option>';
@@ -314,6 +318,8 @@ async function doLogin(){
     const now=new Date();
     document.getElementById('w-inicio').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
     document.getElementById('w-fin').value='';
+    const todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    document.getElementById('w-fecha').value=todayStr;
     ['w-molde','w-ubicacion','w-problema','w-parte'].forEach(id=>document.getElementById(id).value='');
     document.querySelectorAll('.opt-btn,.w-btn').forEach(b=>b.classList.remove('sel'));
     selMethod='';selWater='';
@@ -347,6 +353,7 @@ function selOpt(el,group){
 async function saveLog(){
   const molde=document.getElementById('w-molde').value.trim();
   if(!molde){toast('⚠️ Ingresa el número de molde');return;}
+  const ubicacion=document.getElementById('w-ubicacion').value.trim()||'Tailler';
   const btn=document.getElementById('save-btn');
   btn.disabled=true;btn.innerHTML='<div class="spinner" style="display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:6px"></div> Guardando...';
   try{
@@ -354,15 +361,19 @@ async function saveLog(){
       action:'savelog',
       empleado:currentUser,
       molde,
-      ubicacion:document.getElementById('w-ubicacion').value.trim(),
+      ubicacion:ubicacion,
       method:selMethod,
       problema:document.getElementById('w-problema').value.trim(),
       parte:document.getElementById('w-parte').value.trim(),
+      fecha:document.getElementById('w-fecha').value,
       inicio:document.getElementById('w-inicio').value,
       fin:document.getElementById('w-fin').value,
       water:selWater
     });
     ['w-molde','w-ubicacion','w-problema','w-parte','w-fin'].forEach(id=>document.getElementById(id).value='');
+    
+    const nd=new Date();
+    document.getElementById('w-fecha').value=nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0')+'-'+String(nd.getDate()).padStart(2,'0');
     document.querySelectorAll('.opt-btn,.w-btn').forEach(b=>b.classList.remove('sel'));
     selMethod='';selWater='';
     toast('✓ Guardado en Google Sheets');
