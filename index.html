@@ -236,6 +236,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option>Limpieza</option><option>Preventivo</option><option>Reparacion</option><option>Modificacion</option>
         </select>
       </div>
+      <div class="filter-row">
+        <div style="flex:1"><label style="font-size:11px;color:#999;display:block;margin-bottom:3px">FECHA DESDE</label><input type="date" id="f-fecha-from" onchange="renderAdminLogs()" style="width:100%;padding:9px 10px;border-radius:10px;border:1px solid #ddd;background:white;font-size:12px;color:#333;font-family:inherit;outline:none" /></div>
+        <div style="flex:1"><label style="font-size:11px;color:#999;display:block;margin-bottom:3px">FECHA HASTA</label><input type="date" id="f-fecha-to" onchange="renderAdminLogs()" style="width:100%;padding:9px 10px;border-radius:10px;border:1px solid #ddd;background:white;font-size:12px;color:#333;font-family:inherit;outline:none" /></div>
+      </div>
       <button class="export-btn" onclick="exportExcel()"><i class="ti ti-download" style="font-size:16px"></i> Exportar Excel (.xlsx)</button>
       <div id="admin-log-list"></div>
     </div>
@@ -268,6 +272,7 @@ let GAS_URL = 'https://script.google.com/macros/s/AKfycbxSH42f0Va57iByxumWeULong
 let currentUser = null;
 let selMethod = '', selWater = '';
 let cachedLogs = [];
+let cachedFiltered = [];
 
 // ── Utilities ───────────────────────────────────
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
@@ -461,6 +466,8 @@ async function renderAdminLogs(){
   loading('admin-log-list');
   const empF=document.getElementById('f-emp').value;
   const mF=document.getElementById('f-method').value;
+  const fromF=document.getElementById('f-fecha-from').value;
+  const toF=document.getElementById('f-fecha-to').value;
   try{
     const params={action:'getlogs'};
     if(empF)params.empleado=empF;
@@ -468,10 +475,20 @@ async function renderAdminLogs(){
     const data=await api(params);
     cachedLogs=data.logs||[];
     refreshEmpFilter(cachedLogs);
+    let filtered=cachedLogs;
+    if(fromF||toF){
+      filtered=cachedLogs.filter(l=>{
+        const fecha=l['Fecha']||'';
+        if(fromF && fecha < fromF) return false;
+        if(toF && fecha > toF) return false;
+        return true;
+      });
+    }
+    cachedFiltered=filtered;
     const c=document.getElementById('admin-log-list');
-    c.innerHTML=cachedLogs.length===0
+    c.innerHTML=filtered.length===0
       ?'<div class="empty"><i class="ti ti-clipboard-list"></i><p>No hay registros aún.</p></div>'
-      :cachedLogs.map(logCard).join('');
+      :filtered.map(logCard).join('');
   }catch(e){document.getElementById('admin-log-list').innerHTML='<div class="empty"><i class="ti ti-wifi-off"></i><p>Error de conexión</p></div>';}
 }
 
@@ -566,12 +583,34 @@ async function delEmp(name){
   catch(e){toast('⚠️ Error');}
 }
 
-function exportExcel(){
-  if(!cachedLogs.length){toast('No hay datos para exportar');return;}
-  const ws=XLSX.utils.json_to_sheet(cachedLogs);
+async function exportExcel(){
+  let data = cachedFiltered.length ? cachedFiltered : cachedLogs;
+  if(!data.length){
+    toast('Cargando datos...');
+    try{
+      const res = await api({action:'getlogs'});
+      data = res.logs || [];
+      cachedLogs = data;
+      cachedFiltered = data;
+    }catch(e){toast('⚠️ Error de conexión');return;}
+  }
+  if(!data.length){toast('No hay datos para exportar');return;}
+  const ws=XLSX.utils.json_to_sheet(data.map(l=>({
+    'Molde numero': l['Molde numero']||'',
+    'Maquina': l['Maquina']||'',
+    'Tipo de trabajo': l['Tipo de trabajo']||'',
+    'Descripción': l['Descripción']||'',
+    'Parte de molde': l['Parte de molde']||'',
+    'Fecha': l['Fecha']||'',
+    'Tiempo total (min)': l['Tiempo total (min)']||'',
+    'Circulación de agua': l['Circulación de agua']||'',
+    'Empleado': l['Empleado']||'',
+    'Fecha registro': l['Fecha registro']||''
+  })));
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Registros',ws);
   XLSX.writeFile(wb,'bitacora_moldes.xlsx');
+  toast('✓ Excel descargado');
 }
 
 // ── Init ─────────────────────────────────────────
