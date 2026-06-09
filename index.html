@@ -185,12 +185,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="opt-btn" onclick="selOpt(this,'method')">Preventivo</button>
       <button class="opt-btn" onclick="selOpt(this,'method')">Reparacion</button>
       <button class="opt-btn" onclick="selOpt(this,'method')">Modificacion</button>
-      <button class="opt-btn" onclick="selOpt(this,'method')">Orden de Modificacion</button>
     </div>
     <div class="sec-label">Problema</div>
     <div class="card">
-      <div class="field-row"><i class="ti ti-alert-triangle fi"></i><div class="fin"><label>DESCRIPCIÓN</label><textarea id="w-problema" placeholder="Descripción breve..."></textarea></div></div>
-      <div class="field-row"><i class="ti ti-adjustments fi"></i><div class="fin"><label>PARTE DE MOLDE</label><input type="text" id="w-parte" placeholder="Cavidad, Expulsores, Guías..." /></div></div>
+      <div class="field-row"><i class="ti ti-alert-triangle fi"></i><div class="fin"><label>DESCRIPCIÓN</label><div id="problema-container"><textarea id="w-problema" placeholder="Descripción breve..."></textarea></div></div></div>
+      <div class="field-row"><i class="ti ti-adjustments fi"></i><div class="fin"><label>PARTE DE MOLDE</label><div id="parte-container"><input type="text" id="w-parte" placeholder="" /></div></div></div>
     </div>
     <div class="sec-label">Tiempo de trabajo</div>
     <div class="card" style="margin-bottom:6px">
@@ -231,7 +230,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <select id="f-emp" onchange="renderAdminLogs()"><option value="">Todos los empleados</option></select>
         <select id="f-method" onchange="renderAdminLogs()">
           <option value="">Todos los métodos</option>
-          <option>Limpieza</option><option>Preventivo</option><option>Reparacion</option><option>Modificacion</option><option>Orden de Modificacion</option>
+          <option>Limpieza</option><option>Preventivo</option><option>Reparacion</option><option>Modificacion</option>
         </select>
       </div>
       <button class="export-btn" onclick="exportExcel()"><i class="ti ti-download" style="font-size:16px"></i> Exportar Excel (.xlsx)</button>
@@ -346,8 +345,58 @@ function selOpt(el,group){
   const grid=document.getElementById(group==='method'?'method-grid':'water-grid');
   grid.querySelectorAll(group==='method'?'.opt-btn':'.w-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel');
-  if(group==='method')selMethod=el.textContent.trim();
-  else selWater=el.textContent.trim();
+  if(group==='method'){
+    selMethod=el.textContent.trim();
+    updateProblemFields(selMethod);
+  } else selWater=el.textContent.trim();
+}
+
+function makeSelect(id, options){
+  const sel = document.createElement('select');
+  sel.id = id;
+  sel.style.cssText='width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;-webkit-appearance:none;padding:2px 0';
+  const empty = document.createElement('option');
+  empty.value=''; empty.textContent='— Selecciona —';
+  sel.appendChild(empty);
+  options.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;sel.appendChild(op);});
+  return sel;
+}
+
+function makeTextarea(id){
+  const ta = document.createElement('textarea');
+  ta.id = id;
+  ta.style.cssText='width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;resize:none;min-height:54px;line-height:1.5';
+  return ta;
+}
+
+function updateProblemFields(method){
+  const pc = document.getElementById('problema-container');
+  const ptc = document.getElementById('parte-container');
+
+  const parteOptions = ['Fijo','Movil','S/CORE','LITER','Molde completo'];
+
+  if(method === 'Limpieza'){
+    pc.innerHTML='';
+    pc.appendChild(makeSelect('w-problema',['Marca de gas','Marca de oxido','Marca de aceite','Emplasticado']));
+    ptc.innerHTML='';
+    ptc.appendChild(makeSelect('w-parte', parteOptions));
+  } else if(method === 'Preventivo'){
+    pc.innerHTML='<input type="text" id="w-problema" value="Mantenimiento" readonly style="width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;cursor:default" />';
+    ptc.innerHTML='<input type="text" id="w-parte" value="Molde completo" readonly style="width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;cursor:default" />';
+  } else if(method === 'Reparacion' || method === 'Modificacion'){
+    pc.innerHTML='';
+    pc.appendChild(makeTextarea('w-problema'));
+    ptc.innerHTML='';
+    ptc.appendChild(makeSelect('w-parte', parteOptions));
+  } else {
+    pc.innerHTML='';
+    pc.appendChild(makeTextarea('w-problema'));
+    ptc.innerHTML='';
+    const inp = document.createElement('input');
+    inp.type='text'; inp.id='w-parte';
+    inp.style.cssText='width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit';
+    ptc.appendChild(inp);
+  }
 }
 
 async function saveLog(){
@@ -370,7 +419,9 @@ async function saveLog(){
       fin:document.getElementById('w-fin').value,
       water:selWater
     });
-    ['w-molde','w-ubicacion','w-problema','w-parte','w-fin'].forEach(id=>document.getElementById(id).value='');
+    ['w-molde','w-ubicacion','w-fin'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('problema-container').innerHTML='<textarea id="w-problema" style="width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;resize:none;min-height:54px;line-height:1.5"></textarea>';
+    document.getElementById('parte-container').innerHTML='<input type="text" id="w-parte" style="width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit" />';
     
     const nd=new Date();
     document.getElementById('w-fecha').value=nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0')+'-'+String(nd.getDate()).padStart(2,'0');
