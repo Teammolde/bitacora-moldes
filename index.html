@@ -160,7 +160,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
   <div class="login-body">
     <i class="ti ti-lock" style="font-size:56px;color:#1a237e;margin-bottom:4px"></i>
-    <h2>Contraseña de admin</h2>
+    <h2>Acceso de administrador</h2>
+    <input type="text" class="login-input" id="admin-id" placeholder="ID de administrador" onkeydown="if(event.key==='Enter')doAdminLogin()" />
     <input type="password" class="login-input" id="admin-pw" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doAdminLogin()" />
     <div id="admin-err" class="err"></div>
     <button class="login-btn" onclick="doAdminLogin()">Entrar como administrador</button>
@@ -228,6 +229,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="tab active" onclick="adminTab('records')"><i class="ti ti-list" style="font-size:14px;display:block;margin-bottom:1px"></i>Registros</div>
     <div class="tab" onclick="adminTab('stats')"><i class="ti ti-chart-bar" style="font-size:14px;display:block;margin-bottom:1px"></i>Estadísticas</div>
     <div class="tab" onclick="adminTab('employees')"><i class="ti ti-users" style="font-size:14px;display:block;margin-bottom:1px"></i>Empleados</div>
+    <div class="tab" id="tab-accounts" style="display:none" onclick="adminTab('accounts')"><i class="ti ti-shield-lock" style="font-size:14px;display:block;margin-bottom:1px"></i>Admins</div>
   </div>
   <div class="body">
     <div id="admin-records" class="a-tab">
@@ -262,6 +264,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="sec-label">Lista</div>
       <div class="card" id="emp-list"></div>
     </div>
+    <div id="admin-accounts" class="a-tab" style="display:none">
+      <div class="sec-label" style="margin-top:4px">Agregar administrador</div>
+      <div class="add-emp">
+        <input type="text" id="new-adm-id" placeholder="ID" />
+        <input type="password" id="new-adm-pw" placeholder="Contraseña" style="width:110px" />
+        <button onclick="addAdminAccount()"><i class="ti ti-plus"></i></button>
+      </div>
+      <div class="sec-label">Lista de administradores</div>
+      <div class="card" id="admin-accounts-list"></div>
+    </div>
   </div>
 </div>
 
@@ -269,12 +281,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const ADMIN_PW = 'tlsalswo5%';
+const MAIN_ADMIN = 'Shin mj';
+let adminAccounts = [
+  {id:'Shin mj', pw:'tlsalswo', role:'main'},
+  {id:'Choi wb', pw:'chldnjsqor', role:'admin'},
+  {id:'Eduardo', pw:'eduardo', role:'admin'},
+  {id:'Victor',  pw:'victor',  role:'admin'},
+];
 let GAS_URL = 'https://script.google.com/macros/s/AKfycbxSH42f0Va57iByxumWeULong98oQR3EDEpg0G80g1Rnb4jJZY-5x1QNBl_nz5mbiLtcw/exec';
 let currentUser = null;
 let selMethod = '', selWater = '';
 let cachedLogs = [];
 let cachedFiltered = [];
+let currentAdminRole = '';
 
 // ── Utilities ───────────────────────────────────
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
@@ -310,7 +329,12 @@ async function initLogin(){
   }catch(e){sel.innerHTML='<option value="">— Error de conexión —</option>';}
 }
 
-function showAdminLogin(){document.getElementById('admin-pw').value='';document.getElementById('admin-err').textContent='';show('s-admin-login');}
+function showAdminLogin(){
+  document.getElementById('admin-id').value='';
+  document.getElementById('admin-pw').value='';
+  document.getElementById('admin-err').textContent='';
+  show('s-admin-login');
+}
 
 async function doLogin(){
   const name=document.getElementById('login-name').value;
@@ -341,10 +365,17 @@ async function doLogin(){
 }
 
 function doAdminLogin(){
+  const id=document.getElementById('admin-id').value.trim();
   const pw=document.getElementById('admin-pw').value;
-  if(pw!==ADMIN_PW){document.getElementById('admin-err').textContent='Contraseña incorrecta';return;}
-  document.getElementById('admin-err').textContent='';document.getElementById('admin-pw').value='';
-  currentUser='admin';
+  const acc=adminAccounts.find(a=>a.id===id&&a.pw===pw);
+  if(!acc){document.getElementById('admin-err').textContent='ID o contraseña incorrectos';return;}
+  document.getElementById('admin-err').textContent='';
+  document.getElementById('admin-pw').value='';
+  document.getElementById('admin-id').value='';
+  currentUser=acc.id;
+  currentAdminRole=acc.role;
+  document.querySelector('#s-admin .header-sub').textContent=acc.id;
+  refreshAdminEmpFilter();
   adminTab('records');
   show('s-admin');
 }
@@ -456,12 +487,54 @@ async function saveLog(){
 
 // ── Admin ─────────────────────────────────────────
 function adminTab(tab){
-  document.querySelectorAll('#s-admin .tab').forEach((t,i)=>t.classList.toggle('active',['records','stats','employees'][i]===tab));
+  const tabs=['records','stats','employees','accounts'];
+  document.querySelectorAll('#s-admin .tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.a-tab').forEach(d=>d.style.display='none');
   document.getElementById('admin-'+tab).style.display='block';
   if(tab==='records')renderAdminLogs();
   if(tab==='stats')renderStats();
   if(tab==='employees')renderEmpList();
+  if(tab==='accounts')renderAdminAccountsTab();
+}
+
+function renderAdminAccountsTab(){
+  const tabEl=document.getElementById('tab-accounts');
+  if(currentAdminRole==='main'){
+    tabEl.style.display='block';
+    const list=document.getElementById('admin-accounts-list');
+    if(list) list.innerHTML=adminAccounts.map((a,i)=>`
+      <div class="emp-row">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--color-text-primary)">${a.id} ${a.role==='main'?'⭐':''}</div>
+          <div style="font-size:11px;color:#bbb">PW: ${'•'.repeat(a.pw.length)}</div>
+        </div>
+        ${a.role!=='main'?`<button class="del-btn" onclick="delAdminAccount(${i})"><i class="ti ti-trash" style="font-size:15px"></i></button>`:'<span style="font-size:11px;color:#bbb">Principal</span>'}
+      </div>`).join('');
+  } else {
+    tabEl.style.display='none';
+  }
+}
+
+function addAdminAccount(){
+  if(currentAdminRole!=='main'){toast('⚠️ Sin permiso');return;}
+  const id=document.getElementById('new-adm-id').value.trim();
+  const pw=document.getElementById('new-adm-pw').value.trim();
+  if(!id||!pw){toast('⚠️ ID y contraseña requeridos');return;}
+  if(adminAccounts.find(a=>a.id===id)){toast('⚠️ Ya existe');return;}
+  adminAccounts.push({id,pw,role:'admin'});
+  document.getElementById('new-adm-id').value='';
+  document.getElementById('new-adm-pw').value='';
+  renderAdminAccountsTab();
+  toast('✓ Administrador agregado');
+}
+
+function delAdminAccount(i){
+  if(currentAdminRole!=='main'){toast('⚠️ Sin permiso');return;}
+  if(adminAccounts[i].role==='main'){toast('⚠️ No se puede eliminar al admin principal');return;}
+  if(!confirm('¿Eliminar a '+adminAccounts[i].id+'?'))return;
+  adminAccounts.splice(i,1);
+  renderAdminAccountsTab();
+  toast('Administrador eliminado');
 }
 
 async function renderAdminLogs(){
