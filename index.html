@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Bitácora Moldes"/>
 <meta name="theme-color" content="#1a237e"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj4KICA8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMWEyMzdlIi8+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTYsOTYpIHJvdGF0ZSgtNDUpIj4KICAgIDxyZWN0IHg9Ii0xMiIgeT0iLTYwIiB3aWR0aD0iMjQiIGhlaWdodD0iODAiIHJ4PSI2IiBmaWxsPSJ3aGl0ZSIvPgogICAgPHJlY3QgeD0iLTE4IiB5PSItNjgiIHdpZHRoPSIzNiIgaGVpZ2h0PSIyMCIgcng9IjUiIGZpbGw9IndoaXRlIi8+CiAgICA8cmVjdCB4PSItMTgiIHk9IjE0IiB3aWR0aD0iMzYiIGhlaWdodD0iMjAiIHJ4PSI1IiBmaWxsPSJ3aGl0ZSIvPgogICAgPHJlY3QgeD0iLTEyIiB5PSIyMCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjU1IiByeD0iNiIgZmlsbD0id2hpdGUiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCw3NSAtMTQsNTUgMTQsNTUiIGZpbGw9IndoaXRlIi8+CiAgPC9nPgo8L3N2Zz4="/>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj4KICA8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMWEyMzdlIi8+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTYsOTYpIHJvdGF0ZSgtNDUpIj4KICAgIDxyZWN0IHg9Ii0xMiIgeT0iLTYwIiB3aWR0aD0iMjQiIGhlaWdodD0iODAiIHJ4PSI2IiBmaWxsPSJ3aGl0ZSIvPgogICAgPHJlY3QgeD0iLTE4IiB5PSItNjgiIHdpZHRoPSIzNiIgaGVpZ2h0PSIyMCIgcng9IjUiIGZpbGw9IndoaXRlIi8+CiAgICA8cmVjdCB4PSItMTgiIHk9IjE0IiB3aWR0aD0iMzYiIGhlaWdodD0iMjAiIHJ4PSI1IiBmaWxsPSJ3aGl0ZSIvPgogICAgPHJlY3QgeD0iLTEyIiB5PSIyMCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjU1IiByeD0iNiIgZmlsbD0id2hpdGUiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCw3NSAtMTQsNTUgMTQsNTUiIGZpbGw9IndoaXRlIi8+CiAgPC9nPgo8L3N2Zz4="/>
 <title>Bitácora de Moldes</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/>
 <style>
@@ -240,7 +242,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="flex:1"><label style="font-size:11px;color:#999;display:block;margin-bottom:3px">FECHA DESDE</label><input type="date" id="f-fecha-from" onchange="renderAdminLogs()" style="width:100%;padding:9px 10px;border-radius:10px;border:1px solid #ddd;background:white;font-size:12px;color:#333;font-family:inherit;outline:none" /></div>
         <div style="flex:1"><label style="font-size:11px;color:#999;display:block;margin-bottom:3px">FECHA HASTA</label><input type="date" id="f-fecha-to" onchange="renderAdminLogs()" style="width:100%;padding:9px 10px;border-radius:10px;border:1px solid #ddd;background:white;font-size:12px;color:#333;font-family:inherit;outline:none" /></div>
       </div>
-      <button class="export-btn" onclick="exportExcel()"><i class="ti ti-download" style="font-size:16px"></i> Exportar Excel (.xlsx)</button>
+      <button class="export-btn" onclick="exportExcel()"><i class="ti ti-download" style="font-size:16px"></i> Exportar CSV (Excel)</button>
       <div id="admin-log-list"></div>
     </div>
     <div id="admin-stats" class="a-tab" style="display:none">
@@ -584,7 +586,6 @@ async function delEmp(name){
 }
 
 async function exportExcel(){
-  if(typeof XLSX === 'undefined'){toast('⚠️ Librería no cargada, recarga la página');return;}
   let data = cachedFiltered.length ? cachedFiltered : cachedLogs;
   if(!data.length){
     toast('Cargando datos...');
@@ -597,23 +598,17 @@ async function exportExcel(){
   }
   if(!data.length){toast('No hay datos para exportar');return;}
   try{
-    const ws=XLSX.utils.json_to_sheet(data.map(l=>({
-      'Molde numero': l['Molde numero']||'',
-      'Maquina': l['Maquina']||'',
-      'Tipo de trabajo': l['Tipo de trabajo']||'',
-      'Descripción': l['Descripción']||'',
-      'Parte de molde': l['Parte de molde']||'',
-      'Fecha': l['Fecha']||'',
-      'Tiempo total (min)': l['Tiempo total (min)']||'',
-      'Circulación de agua': l['Circulación de agua']||'',
-      'Empleado': l['Empleado']||'',
-      'Fecha registro': l['Fecha registro']||''
-    })));
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,'Registros',ws);
-    XLSX.writeFile(wb,'bitacora_moldes.xlsx');
-    toast('✓ Excel descargado');
-  }catch(e){toast('⚠️ Error al exportar: '+e.message);}
+    const headers=['Molde numero','Maquina','Tipo de trabajo','Descripción','Parte de molde','Fecha','Tiempo total (min)','Circulación de agua','Empleado','Fecha registro'];
+    const rows=data.map(l=>headers.map(h=>'"'+(String(l[h]||'')).replace(/"/g,'""')+'"').join(','));
+    const csv='\uFEFF'+headers.map(h=>'"'+h+'"').join(',')+'\n'+rows.join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='bitacora_moldes.csv';
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+    toast('✓ Archivo descargado');
+  }catch(e){toast('⚠️ Error: '+e.message);}
 }
 
 // ── Init ─────────────────────────────────────────
