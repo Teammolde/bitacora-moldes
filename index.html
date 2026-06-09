@@ -265,7 +265,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const ADMIN_PW = 'tlsalswo5%';
 let GAS_URL = 'https://script.google.com/macros/s/AKfycbxSH42f0Va57iByxumWeULong98oQR3EDEpg0G80g1Rnb4jJZY-5x1QNBl_nz5mbiLtcw/exec';
@@ -584,6 +584,7 @@ async function delEmp(name){
 }
 
 async function exportExcel(){
+  if(typeof XLSX === 'undefined'){toast('⚠️ Librería no cargada, recarga la página');return;}
   let data = cachedFiltered.length ? cachedFiltered : cachedLogs;
   if(!data.length){
     toast('Cargando datos...');
@@ -595,22 +596,24 @@ async function exportExcel(){
     }catch(e){toast('⚠️ Error de conexión');return;}
   }
   if(!data.length){toast('No hay datos para exportar');return;}
-  const ws=XLSX.utils.json_to_sheet(data.map(l=>({
-    'Molde numero': l['Molde numero']||'',
-    'Maquina': l['Maquina']||'',
-    'Tipo de trabajo': l['Tipo de trabajo']||'',
-    'Descripción': l['Descripción']||'',
-    'Parte de molde': l['Parte de molde']||'',
-    'Fecha': l['Fecha']||'',
-    'Tiempo total (min)': l['Tiempo total (min)']||'',
-    'Circulación de agua': l['Circulación de agua']||'',
-    'Empleado': l['Empleado']||'',
-    'Fecha registro': l['Fecha registro']||''
-  })));
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,'Registros',ws);
-  XLSX.writeFile(wb,'bitacora_moldes.xlsx');
-  toast('✓ Excel descargado');
+  try{
+    const ws=XLSX.utils.json_to_sheet(data.map(l=>({
+      'Molde numero': l['Molde numero']||'',
+      'Maquina': l['Maquina']||'',
+      'Tipo de trabajo': l['Tipo de trabajo']||'',
+      'Descripción': l['Descripción']||'',
+      'Parte de molde': l['Parte de molde']||'',
+      'Fecha': l['Fecha']||'',
+      'Tiempo total (min)': l['Tiempo total (min)']||'',
+      'Circulación de agua': l['Circulación de agua']||'',
+      'Empleado': l['Empleado']||'',
+      'Fecha registro': l['Fecha registro']||''
+    })));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,'Registros',ws);
+    XLSX.writeFile(wb,'bitacora_moldes.xlsx');
+    toast('✓ Excel descargado');
+  }catch(e){toast('⚠️ Error al exportar: '+e.message);}
 }
 
 // ── Init ─────────────────────────────────────────
