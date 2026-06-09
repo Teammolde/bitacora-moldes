@@ -188,11 +188,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="opt-btn" onclick="selOpt(this,'method')">Preventivo</button>
       <button class="opt-btn" onclick="selOpt(this,'method')">Reparacion</button>
       <button class="opt-btn" onclick="selOpt(this,'method')">Modificacion</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Entrada y salida de moldes</button>
+      <button class="opt-btn" onclick="selOpt(this,'method')">Otras actividades</button>
     </div>
     <div class="sec-label">Problema</div>
     <div class="card">
       <div class="field-row"><i class="ti ti-alert-triangle fi"></i><div class="fin"><label>DESCRIPCIÓN</label><div id="problema-container"><textarea id="w-problema" placeholder="Descripción breve..."></textarea></div></div></div>
-      <div class="field-row"><i class="ti ti-adjustments fi"></i><div class="fin"><label>PARTE DE MOLDE</label><div id="parte-container"><input type="text" id="w-parte" placeholder="" /></div></div></div>
+      <div class="field-row" id="parte-row"><i class="ti ti-adjustments fi"></i><div class="fin"><label>PARTE DE MOLDE</label><div id="parte-container"><input type="text" id="w-parte" placeholder="" /></div></div></div>
     </div>
     <div class="sec-label">Tiempo de trabajo</div>
     <div class="card" style="margin-bottom:6px">
@@ -237,7 +239,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <select id="f-emp" onchange="renderAdminLogs()"><option value="">Todos los empleados</option></select>
         <select id="f-method" onchange="renderAdminLogs()">
           <option value="">Todos los métodos</option>
-          <option>Limpieza</option><option>Preventivo</option><option>Reparacion</option><option>Modificacion</option>
+          <option>Limpieza</option><option>Preventivo</option><option>Reparacion</option><option>Modificacion</option><option>Entrada y salida de moldes</option><option>Otras actividades</option>
         </select>
       </div>
       <div class="filter-row">
@@ -284,9 +286,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 const MAIN_ADMIN = 'shin';
 let adminAccounts = [
   {id:'shin', pw:'tlsalswo', role:'main'},
-  {id:'choi', pw:'choi', role:'admin'},
-  {id:'eduardo', pw:'eduardo', role:'admin'},
-  {id:'victor',  pw:'victor',  role:'admin'},
+  {id:'choi', pw:'chldnjsqor', role:'admin'},
+  {id:'Eduardo', pw:'eduardo', role:'admin'},
+  {id:'Victor',  pw:'victor',  role:'admin'},
 ];
 let GAS_URL = 'https://script.google.com/macros/s/AKfycbxSH42f0Va57iByxumWeULong98oQR3EDEpg0G80g1Rnb4jJZY-5x1QNBl_nz5mbiLtcw/exec';
 let currentUser = null;
@@ -428,6 +430,7 @@ function updateProblemFields(method){
   const ptc = document.getElementById('parte-container');
 
   const parteOptions = ['Fijo','Movil','S/CORE','LITER','Molde completo'];
+  document.getElementById('parte-row').style.display='flex';
 
   if(method === 'Limpieza'){
     pc.innerHTML='';
@@ -437,12 +440,18 @@ function updateProblemFields(method){
   } else if(method === 'Preventivo'){
     pc.innerHTML='<input type="text" id="w-problema" value="Mantenimiento" readonly style="width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;cursor:default" />';
     ptc.innerHTML='<input type="text" id="w-parte" value="Molde completo" readonly style="width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;cursor:default" />';
-  } else if(method === 'Reparacion' || method === 'Modificacion'){
+  } else if(method === 'Reparacion' || method === 'Modificacion' || method === 'Entrada y salida de moldes'){
     pc.innerHTML='';
     pc.appendChild(makeTextarea('w-problema'));
     ptc.innerHTML='';
     ptc.appendChild(makeSelect('w-parte', parteOptions));
+  } else if(method === 'Otras actividades'){
+    pc.innerHTML='';
+    pc.appendChild(makeTextarea('w-problema'));
+    ptc.innerHTML='<input type="text" id="w-parte" value="" />';
+    document.getElementById('parte-row').style.display='none';
   } else {
+    document.getElementById('parte-row').style.display='flex';
     pc.innerHTML='';
     pc.appendChild(makeTextarea('w-problema'));
     ptc.innerHTML='';
