@@ -196,8 +196,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="field-row"><i class="ti ti-calendar fi"></i><div class="fin"><label>FECHA</label><input type="date" id="w-fecha" /></div></div>
     </div>
     <div class="time-row">
-      <div class="card"><div class="field-row"><i class="ti ti-clock fi"></i><div class="fin"><label>INICIO</label><input type="time" id="w-inicio" /></div></div></div>
-      <div class="card"><div class="field-row"><i class="ti ti-clock-check fi"></i><div class="fin"><label>FIN</label><input type="time" id="w-fin" /></div></div></div>
+      <div class="card"><div class="field-row"><i class="ti ti-clock fi"></i><div class="fin"><label>INICIO</label><input type="time" id="w-inicio" onchange="calcDuration()" /></div></div></div>
+      <div class="card"><div class="field-row"><i class="ti ti-clock-check fi"></i><div class="fin"><label>FIN</label><input type="time" id="w-fin" onchange="calcDuration()" /></div></div></div>
+    </div>
+    <div class="card" style="margin-bottom:6px">
+      <div class="field-row"><i class="ti ti-hourglass fi"></i><div class="fin"><label>TIEMPO TOTAL (minutos)</label><input type="number" id="w-duracion" placeholder="0" readonly style="color:#1a237e;font-weight:600" /></div></div>
     </div>
     <div class="sec-label">Circulación de agua</div>
     <div class="water-grid" id="water-grid">
@@ -317,6 +320,7 @@ async function doLogin(){
     const now=new Date();
     document.getElementById('w-inicio').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
     document.getElementById('w-fin').value='';
+    document.getElementById('w-duracion').value='';
     const todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
     document.getElementById('w-fecha').value=todayStr;
     ['w-molde','w-ubicacion','w-problema','w-parte'].forEach(id=>document.getElementById(id).value='');
@@ -351,7 +355,19 @@ function selOpt(el,group){
   } else selWater=el.textContent.trim();
 }
 
-function makeSelect(id, options){
+function calcDuration(){
+  const inicio=document.getElementById('w-inicio').value;
+  const fin=document.getElementById('w-fin').value;
+  if(inicio && fin){
+    const [h1,m1]=inicio.split(':').map(Number);
+    const [h2,m2]=fin.split(':').map(Number);
+    let mins=(h2*60+m2)-(h1*60+m1);
+    if(mins<0) mins+=24*60;
+    document.getElementById('w-duracion').value=mins;
+  }
+}
+
+
   const sel = document.createElement('select');
   sel.id = id;
   sel.style.cssText='width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;-webkit-appearance:none;padding:2px 0';
@@ -415,11 +431,10 @@ async function saveLog(){
       problema:document.getElementById('w-problema').value.trim(),
       parte:document.getElementById('w-parte').value.trim(),
       fecha:document.getElementById('w-fecha').value,
-      inicio:document.getElementById('w-inicio').value,
-      fin:document.getElementById('w-fin').value,
+      duracion:document.getElementById('w-duracion').value,
       water:selWater
     });
-    ['w-molde','w-ubicacion','w-fin'].forEach(id=>document.getElementById(id).value='');
+    ['w-molde','w-ubicacion','w-fin','w-duracion'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('problema-container').innerHTML='<textarea id="w-problema" style="width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit;resize:none;min-height:54px;line-height:1.5"></textarea>';
     document.getElementById('parte-container').innerHTML='<input type="text" id="w-parte" style="width:100%;font-size:14px;color:#111;background:transparent;border:none;outline:none;font-family:inherit" />';
     
