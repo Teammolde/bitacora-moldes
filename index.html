@@ -284,29 +284,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const MAIN_ADMIN = 'shin';
-const DEFAULT_ADMIN_ACCOUNTS = [
-  {id:'shin', pw:'tlsalswo', role:'main'},
-  {id:'choi', pw:'chldnjsqor', role:'admin'},
-  {id:'Eduardo', pw:'eduardo', role:'admin'},
-  {id:'Victor',  pw:'victor',  role:'admin'},
-];
-function loadAdminAccounts(){
-  try{
-    const saved=localStorage.getItem('bm_admin_accounts');
-    if(saved){
-      const parsed=JSON.parse(saved);
-      // Siempre preservar el main admin con su contraseña original
-      const main=DEFAULT_ADMIN_ACCOUNTS.find(a=>a.role==='main');
-      const others=parsed.filter(a=>a.role!=='main');
-      return [main, ...others];
-    }
-  }catch(e){}
-  return DEFAULT_ADMIN_ACCOUNTS;
-}
-function saveAdminAccounts(){
-  localStorage.setItem('bm_admin_accounts',JSON.stringify(adminAccounts));
-}
-let adminAccounts = loadAdminAccounts();
+let adminAccounts = [];
 let GAS_URL = 'https://script.google.com/macros/s/AKfycbxSH42f0Va57iByxumWeULong98oQR3EDEpg0G80g1Rnb4jJZY-5x1QNBl_nz5mbiLtcw/exec';
 let currentUser = null;
 let selMethod = '', selWater = '';
@@ -383,20 +361,27 @@ async function doLogin(){
   btn.disabled=false;btn.textContent='Entrar';
 }
 
-function doAdminLogin(){
+async function doAdminLogin(){
   const id=document.getElementById('admin-id').value.trim();
   const pw=document.getElementById('admin-pw').value;
-  const acc=adminAccounts.find(a=>a.id===id&&a.pw===pw);
-  if(!acc){document.getElementById('admin-err').textContent='ID o contraseña incorrectos';return;}
-  document.getElementById('admin-err').textContent='';
-  document.getElementById('admin-pw').value='';
-  document.getElementById('admin-id').value='';
-  currentUser=acc.id;
-  currentAdminRole=acc.role;
-  document.querySelector('#s-admin .header-sub').textContent=acc.id;
-  adminTab('records');
-  renderAdminAccountsTab();
-  show('s-admin');
+  const btn=document.querySelector('#s-admin-login .login-btn');
+  btn.disabled=true;btn.textContent='Verificando...';
+  try{
+    const data=await api({action:'getadmins'});
+    adminAccounts=data.admins||[];
+    const acc=adminAccounts.find(a=>a.id===id&&String(a.pw)===pw);
+    if(!acc){document.getElementById('admin-err').textContent='ID o contraseña incorrectos';btn.disabled=false;btn.textContent='Entrar como administrador';return;}
+    document.getElementById('admin-err').textContent='';
+    document.getElementById('admin-pw').value='';
+    document.getElementById('admin-id').value='';
+    currentUser=acc.id;
+    currentAdminRole=acc.role;
+    document.querySelector('#s-admin .header-sub').textContent=acc.id;
+    adminTab('records');
+    renderAdminAccountsTab();
+    show('s-admin');
+  }catch(e){document.getElementById('admin-err').textContent='Error de conexión';}
+  btn.disabled=false;btn.textContent='Entrar como administrador';
 }
 
 function logout(){currentUser=null;initLogin();}
@@ -523,46 +508,55 @@ function adminTab(tab){
   if(tab==='accounts')renderAdminAccountsTab();
 }
 
-function renderAdminAccountsTab(){
+async function renderAdminAccountsTab(){
   const tabEl=document.getElementById('tab-accounts');
   if(currentAdminRole==='main'){
     tabEl.style.display='block';
     const list=document.getElementById('admin-accounts-list');
-    if(list) list.innerHTML=adminAccounts.map((a,i)=>`
-      <div class="emp-row">
-        <div>
-          <div style="font-size:14px;font-weight:600;color:var(--color-text-primary)">${a.id} ${a.role==='main'?'⭐':''}</div>
-          <div style="font-size:11px;color:#bbb">PW: ${'•'.repeat(a.pw.length)}</div>
-        </div>
-        ${a.role!=='main'?`<button class="del-btn" onclick="delAdminAccount(${i})"><i class="ti ti-trash" style="font-size:15px"></i></button>`:'<span style="font-size:11px;color:#bbb">Principal</span>'}
-      </div>`).join('');
+    if(list){
+      list.innerHTML='<div class="loading"><div class="spinner"></div>Cargando...</div>';
+      try{
+        const data=await api({action:'getadmins'});
+        adminAccounts=data.admins||[];
+        list.innerHTML=adminAccounts.map((a,i)=>`
+          <div class="emp-row">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#111">${a.id} ${a.role==='main'?'⭐':''}</div>
+              <div style="font-size:11px;color:#bbb">PW: ${'•'.repeat(String(a.pw).length)}</div>
+            </div>
+            ${a.role!=='main'?`<button class="del-btn" onclick="delAdminAccount('${a.id}')"><i class="ti ti-trash" style="font-size:15px"></i></button>`:'<span style="font-size:11px;color:#bbb">Principal</span>'}
+          </div>`).join('');
+      }catch(e){list.innerHTML='<div style="padding:14px;color:#bbb;font-size:13px">Error de conexión</div>';}
+    }
   } else {
     tabEl.style.display='none';
   }
 }
 
-function addAdminAccount(){
+async function addAdminAccount(){
   if(currentAdminRole!=='main'){toast('⚠️ Sin permiso');return;}
   const id=document.getElementById('new-adm-id').value.trim();
   const pw=document.getElementById('new-adm-pw').value.trim();
   if(!id||!pw){toast('⚠️ ID y contraseña requeridos');return;}
-  if(adminAccounts.find(a=>a.id===id)){toast('⚠️ Ya existe');return;}
-  adminAccounts.push({id,pw,role:'admin'});
-  saveAdminAccounts();
-  document.getElementById('new-adm-id').value='';
-  document.getElementById('new-adm-pw').value='';
-  renderAdminAccountsTab();
-  toast('✓ Administrador agregado');
+  try{
+    const r=await api({action:'addadmin',id,pw});
+    if(r.error){toast('⚠️ '+r.error);return;}
+    document.getElementById('new-adm-id').value='';
+    document.getElementById('new-adm-pw').value='';
+    renderAdminAccountsTab();
+    toast('✓ Administrador agregado');
+  }catch(e){toast('⚠️ Error de conexión');}
 }
 
-function delAdminAccount(i){
+async function delAdminAccount(id){
   if(currentAdminRole!=='main'){toast('⚠️ Sin permiso');return;}
-  if(adminAccounts[i].role==='main'){toast('⚠️ No se puede eliminar al admin principal');return;}
-  if(!confirm('¿Eliminar a '+adminAccounts[i].id+'?'))return;
-  adminAccounts.splice(i,1);
-  saveAdminAccounts();
-  renderAdminAccountsTab();
-  toast('Administrador eliminado');
+  if(!confirm('¿Eliminar a '+id+'?'))return;
+  try{
+    const r=await api({action:'deladmin',id});
+    if(r.error){toast('⚠️ '+r.error);return;}
+    renderAdminAccountsTab();
+    toast('Administrador eliminado');
+  }catch(e){toast('⚠️ Error de conexión');}
 }
 
 async function renderAdminLogs(){
