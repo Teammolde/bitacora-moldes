@@ -284,12 +284,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const MAIN_ADMIN = 'shin';
-let adminAccounts = [
+const DEFAULT_ADMIN_ACCOUNTS = [
   {id:'shin', pw:'tlsalswo', role:'main'},
   {id:'choi', pw:'chldnjsqor', role:'admin'},
   {id:'Eduardo', pw:'eduardo', role:'admin'},
   {id:'Victor',  pw:'victor',  role:'admin'},
 ];
+function loadAdminAccounts(){
+  try{
+    const saved=localStorage.getItem('bm_admin_accounts');
+    if(saved){
+      const parsed=JSON.parse(saved);
+      // Siempre preservar el main admin con su contraseña original
+      const main=DEFAULT_ADMIN_ACCOUNTS.find(a=>a.role==='main');
+      const others=parsed.filter(a=>a.role!=='main');
+      return [main, ...others];
+    }
+  }catch(e){}
+  return DEFAULT_ADMIN_ACCOUNTS;
+}
+function saveAdminAccounts(){
+  localStorage.setItem('bm_admin_accounts',JSON.stringify(adminAccounts));
+}
+let adminAccounts = loadAdminAccounts();
 let GAS_URL = 'https://script.google.com/macros/s/AKfycbxSH42f0Va57iByxumWeULong98oQR3EDEpg0G80g1Rnb4jJZY-5x1QNBl_nz5mbiLtcw/exec';
 let currentUser = null;
 let selMethod = '', selWater = '';
@@ -531,6 +548,7 @@ function addAdminAccount(){
   if(!id||!pw){toast('⚠️ ID y contraseña requeridos');return;}
   if(adminAccounts.find(a=>a.id===id)){toast('⚠️ Ya existe');return;}
   adminAccounts.push({id,pw,role:'admin'});
+  saveAdminAccounts();
   document.getElementById('new-adm-id').value='';
   document.getElementById('new-adm-pw').value='';
   renderAdminAccountsTab();
@@ -542,6 +560,7 @@ function delAdminAccount(i){
   if(adminAccounts[i].role==='main'){toast('⚠️ No se puede eliminar al admin principal');return;}
   if(!confirm('¿Eliminar a '+adminAccounts[i].id+'?'))return;
   adminAccounts.splice(i,1);
+  saveAdminAccounts();
   renderAdminAccountsTab();
   toast('Administrador eliminado');
 }
