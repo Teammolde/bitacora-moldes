@@ -1,0 +1,17 @@
+{
+  "name": "금형 조회 · Buscador de Moldes",
+  "short_name": "금형 조회",
+  "description": "품번으로 금형의 차종·중량·위치·PLANTA·상태와 최근 정비 이력을 조회합니다.",
+  "start_url": "./Molde.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1014",
+  "theme_color": "#0E1014",
+  "lang": "ko",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
